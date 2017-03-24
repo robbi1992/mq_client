@@ -1,31 +1,23 @@
 <?php
-date_default_timezone_set("UTC");
-require_once('lib/mq_transactions.php');
-//add oop method to connection
 require_once('lib/conn_global.php');
-
-$mq = new Lib_mq();
-$get = $mq->get_queue();
 
 $db = new Conn_global();
 $conn_db = $db->create_connection();
-//var_dump($get); exit();
-/*
-	db connection
-*/
 
-/*$server_db = "192.168.240.107";
-$conn_db = mssql_connect($server_db, 'dev_dboard', 'devdboard');
-$select_db = mssql_select_db('db_MROSystem', $conn_db);*/
 
-		$xml = simplexml_load_string($get);
+$url = 'xml4ops/';
+$nameFile = 'gmf_';
+$allFile = glob($url . $nameFile . '*');
+
+if(count($allFile) > 0) {
+	foreach($allFile as $val) {
+		$file = file_get_contents($val);
+		$xml = simplexml_load_string($file);
 		if ($xml === false) {
 			echo "Failed loading XML: ";
 			foreach(libxml_get_errors() as $error) {
 				echo "<br>", $error->message;
 			}
-			//echo 'file ' . $onlyName . 'doesn\'t have xml format, file is deleted';
-			//unlink($val);
 		} 
 		else {
 			$data['carrier'] = $xml->{'FlightLeg.OPS'}->FlightId->Carrier[0];
@@ -34,8 +26,6 @@ $select_db = mssql_select_db('db_MROSystem', $conn_db);*/
 			$date = $xml->{'FlightLeg.OPS'}->FlightId->Date[0];
 			$newDate = explode('T', $date);
 			$data['date']['theDate'] = $newDate[0];
-			//$newTime = explode('.', $newDate[1]);
-			//$data['date']['theTime'] = $newTime[0];
 			$data['acRegistration'] = $xml->{'FlightLeg.OPS'}->Equipment->AircraftRegistration[0];
 			
 			//actual	
@@ -168,7 +158,7 @@ $select_db = mssql_select_db('db_MROSystem', $conn_db);*/
 			while ($val_rows = mssql_fetch_array($query_check)) {
 				$rows++;
 			}
-			//echo $rows; exit();
+
 			if ($rows == 0) {
 				$query = "INSERT INTO dbo.TBL_AC_MOVEMENT_PROD1 (COL_CARRIER_CODE, COL_FLIGHT_NUMBER, COL_DEPARTURE_NUMBER, COL_DEPARTURE_STATION, COL_PLAN_DEPARTURE_DATE,
 						COL_AIRCRAFT_REGISTRATION, COL_CHOX_OFF_DATE, COL_CHOX_OFF_TIME, COL_WHEELS_OFF_DATE, COL_WHEELS_OFF_TIME,
@@ -186,24 +176,18 @@ $select_db = mssql_select_db('db_MROSystem', $conn_db);*/
 				";
 				$insert = mssql_query($query, $conn_db);
 				if($insert) {
-					//var_dump($get);
-					//echo 'success: 1 rows affected from file ' . $onlyName . '<br>';
-					//rename($val, $dir_move . $onlyName);
 					echo 'success: 1 rows affected';
+					unlink($val);
 				}
 				else {
 					//validation if it doesnt inserted to db
-					$xml = new SimpleXMLElement($get);
-					$xml_file = $xml->asXML('./xml4ops/' . uniqid('gmf_') . '.xml');
 					echo 'error: insert failed';
-					//echo 'Error: insert is failed from file ' . $onlyName . '<br>';
 				}
 			}
 			else {
 				echo 'notice: Duplicate data';
-				//echo 'Notice: Duplicate data from file ' . $onlyName . '<br> File was delete from server';
-				//unlink($val);
+				unlink($val);
 			}
-			//end duplicate
-		} // end else
-
+		}
+	}
+}

@@ -10,10 +10,10 @@ class Lib_mq {
 	private $_allocated_length = NULL;
 	private $_object = '';
 	
-	function __construct($put_queue = 'PRD.MELADVC.SWIFT.QUEUE') {
-		$this->_qm = 'GARUDAPRD.QM';
-		$this->_channel = 'SWIFTPRD.SVRCONN';
-		$this->_host = '192.168.176.80';
+	function __construct($put_queue = 'TEST.MELADVC.QUEUE') {
+		$this->_qm = 'GARUDAUAT.QM';
+		$this->_channel = 'SWIFTUAT.SVRCONN';
+		$this->_host = '192.168.127.80';
 		$this->_qget = 'TEST.SWIFT.QUEUE';
 		$this->_qput = $put_queue;
 		$this->_allocated_length = 500000;
@@ -95,7 +95,7 @@ class Lib_mq {
 		$this->set_object($this->_qput);
 		$object = $this->get_object();
 		$obj = $this->open_connection($connection, $object);
-		
+
 		$md = 	array(
 			'Version' => MQSERIES_MQMD_VERSION_1,
 			'Expiry' => MQSERIES_MQEI_UNLIMITED,

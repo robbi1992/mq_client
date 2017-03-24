@@ -17,7 +17,8 @@ if(!$select_db) {
 	die('Failed to connect to database');
 }
 
-$query = mssql_query("SELECT * FROM tblHIL_swift WHERE (FlagStatus IS NULL OR FlagStatus = 0) AND DateClose = '0000-00-00 00:00:00.000'", $conn_db);
+//$query = mssql_query("SELECT * FROM tblHIL_swift WHERE DateClose = '0000-00-00 00:00:00.000'", $conn_db);
+$query = mssql_query("SELECT * FROM tblHIL_swift WHERE DateClose = '0000-00-00 00:00:00.000' AND (FlagStatus = 0 OR FlagStatus IS NULL)", $conn_db);
 $query_station = mssql_query("SELECT StaID, StaCode FROM tblstation", $conn_db);
 while ($st = mssql_fetch_array($query_station)) {
 	$station[$st['StaID']] = $st['StaCode'];
@@ -69,12 +70,14 @@ while($rows = mssql_fetch_array($query)) {
 
 	$put = $mq->put_queue($xml);
 
-	mssql_query("UPDATE tblHIL_swift 
+	if ($put) {
+		mssql_query("UPDATE tblHIL_swift 
 			SET FlagStatus = 1
 			WHERE itemID = '".$rows['itemID']."'
 		", $conn_db);
 
-	$current_seq++;
+		$current_seq++;
+	}
 }
 
 $last['sequence'] = $current_seq;

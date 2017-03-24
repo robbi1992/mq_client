@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FlightLegNotification xmlns="http://www.xml4mvt.org/FlightMessages/v_1">
+    <MessageReference>
+        <TimeStamp>2017-03-13T06:46:47.0Z</TimeStamp>
+        <Creator>Movement Manager</Creator>
+        <Stream/>
+        <Reference>1</Reference>
+        <BatchNumber>99514356</BatchNumber>
+        <EndIndicator>E</EndIndicator>
+    </MessageReference>
+    <FlightLeg.OPS xmlns="http://services.sabre.com/STL/v01">
+        <FlightId>
+            <FlightNumber>504</FlightNumber>
+            <Suffix>R</Suffix>
+            <Carrier>GA</Carrier>
+            <Date>2017-03-13T07:25:00.000Z</Date>
+        </FlightId>
+        <FlightLegId>
+            <DepartureAirport>CGK</DepartureAirport>
+            <DepartureDate>2017-03-13T07:25:00.0Z</DepartureDate>
+        </FlightLegId>
+        <FlightLegReferenceNumber IsChanged="true">2785298</FlightLegReferenceNumber>
+        <ServiceType IsChanged="true">J</ServiceType>
+        <VersionNumber IsChanged="true">1</VersionNumber>
+        <Equipment>
+            <ScheduledAircraftOwner IsChanged="true">GA</ScheduledAircraftOwner>
+            <ScheduledAircraftType IsChanged="true">738</ScheduledAircraftType>
+            <AircraftOwner IsChanged="true">GA</AircraftOwner>
+            <AircraftType IsChanged="true">738</AircraftType>
+            <AircraftRegistration IsChanged="true">PK-GFG</AircraftRegistration>
+            <AircraftConfiguration>
+                <ClassConfiguration>
+                    <Class IsChanged="true">C</Class>
+                    <Count IsChanged="true">12</Count>
+                </ClassConfiguration>
+                <ClassConfiguration>
+                    <Class IsChanged="true">Y</Class>
+                    <Count IsChanged="true">150</Count>
+                </ClassConfiguration>
+            </AircraftConfiguration>
+        </Equipment>
+        <Airports>
+            <ScheduledDeparture IsChanged="true">CGK</ScheduledDeparture>
+            <LatestDeparture IsChanged="true">CGK</LatestDeparture>
+            <DepartureINDOIndicator IsChanged="true">D</DepartureINDOIndicator>
+            <ScheduledArrival IsChanged="true">PNK</ScheduledArrival>
+            <LatestArrival IsChanged="true">PNK</LatestArrival>
+            <ArrivalINDOIndicator IsChanged="true">D</ArrivalINDOIndicator>
+        </Airports>
+        <Time>
+            <Original>
+                <Departure IsChanged="true">2017-03-13T07:25:00.0Z</Departure>
+                <Arrival IsChanged="true">2017-03-13T09:00:00.0Z</Arrival>
+            </Original>
+            <Published>
+                <Departure IsChanged="true">2017-03-13T07:25:00.0Z</Departure>
+                <Arrival IsChanged="true">2017-03-13T09:00:00.0Z</Arrival>
+            </Published>
+            <Scheduled>
+                <Departure IsChanged="true">2017-03-13T07:25:00.0Z</Departure>
+                <Arrival IsChanged="true">2017-03-13T09:00:00.0Z</Arrival>
+            </Scheduled>
+        </Time>
+        <Status IsChanged="true">Scheduled</Status>
+        <SpecialStatus IsChanged="true">Other</SpecialStatus>
+        <ChangeReasons IsChanged="true">DAMA</ChangeReasons>
+        <OnwardFlight>
+            <FlightNumber IsChanged="true">507</FlightNumber>
+            <Carrier IsChanged="true">GA</Carrier>
+            <Date IsChanged="true">2017-03-13T08:20:00.000Z</Date>
+        </OnwardFlight>
+    </FlightLeg.OPS>
+</FlightLegNotification>

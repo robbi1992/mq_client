@@ -1,22 +1,24 @@
 <?php
 date_default_timezone_set("UTC");
 require_once('lib/mq_transactions.php');
-//add oop method to connection
-require_once('lib/conn_global.php');
-
 $mq = new Lib_mq();
-$get = $mq->get_queue();
 
-$db = new Conn_global();
-$conn_db = $db->create_connection();
+$get = $mq->get_queue();
 //var_dump($get); exit();
 /*
 	db connection
 */
 
-/*$server_db = "192.168.240.107";
+$server_db = "192.168.240.107";
 $conn_db = mssql_connect($server_db, 'dev_dboard', 'devdboard');
-$select_db = mssql_select_db('db_MROSystem', $conn_db);*/
+$select_db = mssql_select_db('db_MROSystem', $conn_db);
+
+if(!$conn_db) {
+	die('Failed to connect to database server ');
+}
+if(!$select_db) {
+	die('Failed to connect to database');
+}
 
 		$xml = simplexml_load_string($get);
 		if ($xml === false) {
@@ -87,9 +89,9 @@ $select_db = mssql_select_db('db_MROSystem', $conn_db);*/
 			}
 			//end actual
 		
-			//estimated (changed structurre) block off from schedlude -> departure
-			if (isset($xml->{'FlightLeg.OPS'}->Time->Scheduled->Departure[0])) {
-				$estBlockOff = $xml->{'FlightLeg.OPS'}->Time->Scheduled->Departure[0];
+			//estimated
+			if (isset($xml->{'FlightLeg.OPS'}->Time->Estimated->BlockOff[0])) {
+				$estBlockOff = $xml->{'FlightLeg.OPS'}->Time->Estimated->BlockOff[0];
 				$newEstBlockOff = explode('T', $estBlockOff);
 				$data['estBlockOff']['theDate'] = $newEstBlockOff[0];
 				$newTimeEstBlockOff = explode('.', $newEstBlockOff[1]);
@@ -123,9 +125,9 @@ $select_db = mssql_select_db('db_MROSystem', $conn_db);*/
 				$data['estTouchDown']['theDate'] = '';
 				$data['estTouchDown']['theTime'] = '';	
 			}
-			//here changed to get data from scheduled arrival
-			if (isset($xml->{'FlightLeg.OPS'}->Time->Scheduled->Arrival[0])) {
-				$estBlockOn = $xml->{'FlightLeg.OPS'}->Time->Scheduled->Arrival[0];
+		
+			if (isset($xml->{'FlightLeg.OPS'}->Time->Estimated->BlockOn[0])) {
+				$estBlockOn = $xml->{'FlightLeg.OPS'}->Time->Estimated->BlockOn[0];
 				$newEstBlockOn = explode('T', $estBlockOn);
 				$data['estBlockOn']['theDate'] = $newEstBlockOn[0];
 				$newTimeEstBlockOn = explode('.', $newEstBlockOn[1]);
@@ -192,9 +194,6 @@ $select_db = mssql_select_db('db_MROSystem', $conn_db);*/
 					echo 'success: 1 rows affected';
 				}
 				else {
-					//validation if it doesnt inserted to db
-					$xml = new SimpleXMLElement($get);
-					$xml_file = $xml->asXML('./xml4ops/' . uniqid('gmf_') . '.xml');
 					echo 'error: insert failed';
 					//echo 'Error: insert is failed from file ' . $onlyName . '<br>';
 				}

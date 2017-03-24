@@ -1,22 +1,27 @@
 <?php
 date_default_timezone_set("UTC");
 require_once('lib/mq_transactions.php');
-//add oop method to connection
-require_once('lib/conn_global.php');
-
 $mq = new Lib_mq();
-$get = $mq->get_queue();
 
-$db = new Conn_global();
-$conn_db = $db->create_connection();
+$val = 'xml4ops/58d30067e3e3d.xml';
+$get = file_get_contents($val);
+
+//$get = $mq->get_queue();
 //var_dump($get); exit();
 /*
 	db connection
 */
 
-/*$server_db = "192.168.240.107";
+$server_db = "192.168.240.107";
 $conn_db = mssql_connect($server_db, 'dev_dboard', 'devdboard');
-$select_db = mssql_select_db('db_MROSystem', $conn_db);*/
+$select_db = mssql_select_db('db_MROSystem', $conn_db);
+
+if(!$conn_db) {
+	die('Failed to connect to database server ');
+}
+if(!$select_db) {
+	die('Failed to connect to database');
+}
 
 		$xml = simplexml_load_string($get);
 		if ($xml === false) {

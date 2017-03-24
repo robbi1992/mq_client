@@ -1,26 +1,21 @@
 <?php
 date_default_timezone_set("UTC");
 require_once('lib/mq_transactions.php');
-//add oop method to connection
-require_once('lib/conn_global.php');
-
-$mq = new Lib_mq('PRD.REVISION.SWIFT.QUEUE');
+$mq = new Lib_mq('TEST.REVISION.QUEUE');
 /*
 	db connection
 */
-/*$server_db = "192.168.240.107";
+$server_db = "192.168.240.107";
 $conn_db = mssql_connect($server_db, 'dev_dboard', 'devdboard');
-$select_db = mssql_select_db('db_MROSystem', $conn_db);*/
-$db = new Conn_global();
-$conn_db = $db->create_connection();
+$select_db = mssql_select_db('db_MROSystem', $conn_db);
 //end db connection
 
-/*if(!$conn_db) {
+if(!$conn_db) {
 	die('Failed to connect to database server ');
 }
 if(!$select_db) {
 	die('Failed to connect to database');
-}*/
+}
 
 //$query = mssql_query("SELECT * FROM TBL_SABRE_REVISION WHERE SEND_FLAG = 0 OR SEND_FLAG IS NULL", $conn_db);
 $query = mssql_query("SELECT TIMEZ, AC_REG, REV_NO, REV_DESC, REV_TYP,  PLAN_START_DATE, PLAN_START_TIME, ACT_START_DATE, ACT_START_TIME, SCHED_SRV_DATE, SCHED_SRV_TIME, ACT_SRV_DATE, ACT_SRV_TIME, WRKCTR_CODE, LOC_TYP, ASSGN_AIRPORT_CODE, DELETED FROM TBL_SABRE_REVISION WHERE SEND_FLAG = 0 OR SEND_FLAG IS NULL", $conn_db);
@@ -32,60 +27,10 @@ if ($current_seq > 99999999) $current_seq = 0;
 /* json revision log*/
 $rev_log = json_decode(file_get_contents('revision_log.json'), TRUE);
 
-$console = array(
-	'total' => 0,
-	'success' => 0,
-	'fail' => 0
-);
-
 while($rows = mssql_fetch_array($query)) {
-	//new logic for handle back condition
-	$revNo = $rows['REV_NO'];
-	$index = $rows['TIMEZ'] . $rows['AC_REG'] . $rows['REV_DESC'] . $rows['REV_TYP'] . $rows['PLAN_START_DATE'] . $rows['PLAN_START_TIME'] . $rows['ACT_START_DATE'] . $rows['ACT_START_TIME'] . $rows['SCHED_SRV_DATE'] . $rows['SCHED_SRV_TIME'] . $rows['ACT_SRV_DATE'] . $rows['ACT_SRV_TIME'] . $rows['WRKCTR_CODE'] . $rows['LOC_TYP'] . $rows['ASSGN_AIRPORT_CODE'] . $rows['DELETED'];
-	if (isset($rev_log[$revNo])) {
-		if ($rev_log[$revNo] !== $index) {
-			$xml = generate_xml($rows, $current_seq);
-			$put = $mq->put_queue($xml);
-	
-			//if mq success put on mq client asyst
-			if ($put) {
-				mssql_query("UPDATE TBL_SABRE_REVISION SET SEND_FLAG = 1 WHERE REV_NO = '".$rows['REV_NO']."'", $conn_db);
-				
-				$current_seq++;
-				$rev_log[$revNo] = $index;
-			}
-		}
-	}
-	else {
-		$xml = generate_xml($rows, $current_seq);
-		$put = $mq->put_queue($xml);
-
-		//if mq success put on mq client asyst
-		if ($put) {
-			mssql_query("UPDATE TBL_SABRE_REVISION SET SEND_FLAG = 1 WHERE REV_NO = '".$rows['REV_NO']."'", $conn_db);
+	$index = $rows['TIMEZ'] . $rows['AC_REG']  . $rows['REV_NO'] . $rows['REV_DESC'] . $rows['REV_TYP'] . $rows['PLAN_START_DATE'] . $rows['PLAN_START_TIME'] . $rows['ACT_START_DATE'] . $rows['ACT_START_TIME'] . $rows['SCHED_SRV_DATE'] . $rows['SCHED_SRV_TIME'] . $rows['ACT_SRV_DATE'] . $rows['ACT_SRV_TIME'] . $rows['WRKCTR_CODE'] . $rows['LOC_TYP'] . $rows['ASSGN_AIRPORT_CODE'] . $rows['DELETED'];
+	if ( ! isset($rev_log[$index])) {
 			
-			$current_seq++;
-			$rev_log[$revNo] = $index;
-
-			$console['success']++;
-		}
-		else {
-			$console['fail']++;	
-		}
-	}
-	//break;
-	//var_dump($xml); exit();
-
-	$console['total']++;
-}
-
-echo 'Total: ' . $console['total'] . ' Success: ' . $console['success'] .' Fail: ' . $console['fail'];
-
-$last['sequence'] = $current_seq;
-file_put_contents('sequence.json', json_encode($last));
-file_put_contents('revision_log.json', json_encode($rev_log));
-
-function generate_xml($rows, $current_seq) {
 		$utc = $rows['TIMEZ'];
 		$acreg = '<AircraftRegistration>'.$rows['AC_REG'].'</AircraftRegistration>';
 		$revNo = '<RevisionNumber>'.$rows['REV_NO'].'</RevisionNumber>';
@@ -170,8 +115,24 @@ function generate_xml($rows, $current_seq) {
 		$xml .= $deleted;
 		$xml .= '</rev:RevisionsMessage>'; //the last one
 
-		return $xml;
+		$put = $mq->put_queue($xml);
+
+		//if mq success put on mq client asyst
+		if ($put) {
+			mssql_query("UPDATE TBL_SABRE_REVISION SET SEND_FLAG = 1 WHERE REV_NO = '".$rows['REV_NO']."'", $conn_db);
+			
+			$current_seq++;
+			$rev_log[$index] = '';
+		}
+		
+	} //end logic (input to mq)
+	//break;
+	//var_dump($xml); exit();
 }
+
+$last['sequence'] = $current_seq;
+file_put_contents('sequence.json', json_encode($last));
+file_put_contents('revision_log.json', json_encode($rev_log));
 
 function convert_sequence($number) { //8 digits
 	if ($number >= 0 && $number <=9) {
